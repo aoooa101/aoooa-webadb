@@ -31,9 +31,9 @@
 
 ## 致谢
 
-本项目重度依赖以下开源项目，特此致谢：
+本项目基于以下开源项目构建：
 
-- [ya-webadb](https://github.com/yume-chan/ya-webadb)（@yume-chan/adb 系列）— 浏览器端 ADB 协议实现与 WebUSB 连接层，让"网页里跑 ADB"成为可能（MIT 协议）。依赖已打包为本地 `vendor/adb-bundle.js`，页面运行时无需外部请求。
+- [ya-webadb](https://github.com/yume-chan/ya-webadb)（@yume-chan/adb 系列）— 浏览器端 ADB 协议实现与 WebUSB 连接层（MIT 协议）。依赖已打包为本地 `vendor/adb-bundle.js`，页面运行时无需外部请求。
 
 ## 免责声明
 

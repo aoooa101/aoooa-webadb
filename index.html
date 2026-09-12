@@ -259,7 +259,7 @@
             <option value="dpm set-device-owner web1n.stopapp/.receiver.AdminReceiver" data-en="Activate StopApp (Device Owner)">激活 小黑屋 (Device Owner)</option>
             <option value="dpm set-device-owner com.catchingnow.icebox/.receiver.DPMReceiver" data-en="Activate IceBox (Device Owner)">激活 冰箱 IceBox (Device Owner)</option>
             <option value="sh /data/data/me.piebridge.brevent/brevent.sh" data-en="Activate Brevent">激活 黑阈 Brevent</option>
-            <option value="sh /data/system/thanos/start.sh" data-en="Activate Thanox">激活 Thanox 淘米</option>
+            <option value="sh /data/system/thanos/start.sh" data-en="Activate Thanox">激活 Thanox</option>
         </optgroup>
         <optgroup label="网络与调试" data-en-label="Network & Debugging">
             <option value="action:tcpip_on" data-en="Enable Wireless ADB (Port 5555)">开启 5555 端口无线调试</option>
@@ -294,8 +294,8 @@
     <h3 data-en="Disclaimer & Safety">免责与安全声明</h3>
     <p data-en="Please review before proceeding:">在使用本控制台前，请仔细阅读以下声明：</p>
     <ul>
-        <li id="txtModalPriv"><strong>本地执行：</strong>本工具为 100% 纯前端浏览器本地运行，绝不上报或中转您的任何设备数据与个人隐私。</li>
-        <li id="txtModalRisk"><strong>特权风险：</strong>ADB 具备系统高阶调试权限，请谨慎执行自定义命令。因用户自行执行命令造成的任何异常，开发者概不负责。</li>
+        <li id="txtModalPriv"><strong>本地执行：</strong>本工具为纯前端运行，所有操作均在浏览器本地完成，不收集或上传任何设备数据与个人信息。</li>
+        <li id="txtModalRisk"><strong>操作风险：</strong>ADB 具有系统底层权限，请谨慎执行自定义命令。因命令执行导致的问题由操作者自行承担。</li>
     </ul>
     <div class="dialog-actions">
         <button id="disagreeBtn" class="btn-disagree" data-en="Cancel">取消</button>
@@ -314,7 +314,7 @@
     import { Adb, AdbDaemonTransport, AdbDaemonWebUsbDeviceManager, AdbTcpIpService, AdbWebCredentialStore } from "./vendor/adb-bundle.js";
 
     // -------------------------------------------------------------
-    // 现代声明式 DOM i18n 引擎 (极简零开销，告别笨重硬编码字典)
+    // DOM 国际化文本切换
     // -------------------------------------------------------------
     let currentLang = localStorage.getItem('webadb_lang') || 
                       (navigator.language && navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en');
@@ -340,11 +340,11 @@
 
         // 弹窗富文本
         document.getElementById('txtModalPriv').innerHTML = lang === 'en' 
-            ? '<strong>Local Execution:</strong> Runs 100% locally in your browser. No telemetry or personal data are collected or transferred.'
-            : '<strong>本地执行：</strong>本工具为 100% 纯前端浏览器本地运行，绝不上报或中转您的任何设备数据与个人隐私。';
+            ? '<strong>Local Execution:</strong> Runs entirely locally in your browser. No device data or personal information is collected or uploaded.'
+            : '<strong>本地执行：</strong>本工具为纯前端运行，所有操作均在浏览器本地完成，不收集或上传任何设备数据与个人信息。';
         document.getElementById('txtModalRisk').innerHTML = lang === 'en'
-            ? '<strong>Privilege Risk:</strong> ADB grants low-level device control. Execute commands at your own risk. The developer is not liable for system malfunctions.'
-            : '<strong>特权风险：</strong>ADB 具备系统高阶调试权限，请谨慎执行自定义命令。因用户自行执行命令造成的任何异常，开发者概不负责。';
+            ? '<strong>Operation Risk:</strong> ADB has system-level permissions. Please run commands with caution. Users are responsible for any device issues caused by custom commands.'
+            : '<strong>操作风险：</strong>ADB 具有系统底层权限，请谨慎执行自定义命令。因命令执行导致的问题由操作者自行承担。';
 
         document.getElementById('langToggleBtn').textContent = lang === 'zh' ? 'English' : '中文';
         if (device) updateConnectedStatus();
@@ -381,7 +381,7 @@
     let deviceName = '';
     let isAgreed = localStorage.getItem('adb_disclaimer_agreed') === 'true';
 
-    // 严格使用 DOM 节点 + textContent，彻底根除 DOM-XSS 隐患
+    // 使用 DOM 节点与 textContent 避免 XSS
     function log(msg, type = 'info') {
         const time = new Date().toLocaleTimeString();
         const div = document.createElement('div');
@@ -454,7 +454,7 @@
         }
     }
 
-    // 三级 Fallback 稳健定位并启动 Shizuku (解决 Toybox/精简版 Linux find 命令缺失)
+    // 按架构路径、ls 及 find 顺序探测并启动 Shizuku
     async function runShizukuSmart() {
         log(currentLang === 'zh' ? '正在多重检索 Shizuku 安装路径...' : 'Locating Shizuku installation across standard paths...', 'info');
         const pathRes = await execute('pm path moe.shizuku.privileged.api');
@@ -539,7 +539,7 @@
         }
     }
 
-    // 抓取硬件信息看板
+    // 获取设备信息
     async function loadDeviceInfo() {
         try {
             const manufacturer = (await execute('getprop ro.product.manufacturer') || '').trim();
