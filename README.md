@@ -7,7 +7,8 @@
 [![i18n](https://img.shields.io/badge/i18n-ZH%2FEN-38bdf8)]()
 [![GitHub last commit](https://img.shields.io/github/last-commit/aoooa101/aoooa-webadb)](https://github.com/aoooa101/aoooa-webadb)
 [![GitHub stars](https://img.shields.io/github/stars/aoooa101/aoooa-webadb)](https://github.com/aoooa101/aoooa-webadb)
-[![ORCID](https://img.shields.io/badge/ORCID-0009--0006--1511--466X-A6CE39?logo=orcid&logoColor=white)](https://orcid.org/0009-0006-1511-466X)
+
+**简体中文** | [English](README_EN.md)
 
 **在线使用**：[webadb.586251.xyz](https://webadb.586251.xyz)（推荐）  
 **备用入口**：[https://aoooa101.github.io/aoooa-webadb/](https://aoooa101.github.io/aoooa-webadb/)
@@ -29,6 +30,12 @@
 
 > **注意**：WebUSB API 要求页面必须运行在 HTTPS 环境或 `http://localhost` 下。
 
+## 想要体验更多功能？
+
+想使用更多功能能力请使用APP版：
+
+- **APP仓库**：[aoooa101/aoooa-adb-android](https://github.com/aoooa101/aoooa-adb-android)
+
 ## 致谢
 
 本项目基于以下开源项目构建：
@@ -43,4 +50,4 @@
 
 本项目采用 [GPL-3.0](./LICENSE) 协议开源。任何基于本项目修改的衍生作品在分发时需保持 GPL-3.0 开源。
 
-作者：[aoooa](https://orcid.org/0009-0006-1511-466X)
+作者：aoooa
