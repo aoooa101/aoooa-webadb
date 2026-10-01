@@ -311,7 +311,151 @@
     //      现改用本地 vendor/adb-bundle.js（esbuild 打包单文件，保证单一实例）。
     //   2. 版本：adb@2.6.2 / adb-daemon-webusb@2.3.2 / adb-credential-web@2.1.0。
     //   3. 新版 spawnWaitText 返回 {stdout, stderr, exitCode} 对象。
-    import { Adb, AdbDaemonTransport, AdbDaemonWebUsbDeviceManager, AdbTcpIpService, AdbWebCredentialStore } from "./vendor/adb-bundle.js";
+    import { Adb, AdbDaemonTransport, AdbDaemonWebUsbDeviceManager, AdbTcpIpService } from "./vendor/adb-bundle.js";
+
+    // -------------------------------------------------------------
+    // 持久化凭证存储（2026-10-01 双存储防灾增强）：
+    //   - IndexedDB 主存 + Cookie 备份，双向补写、互相兜底；
+    //   - 与 vendor/adb-bundle.js 内置的 AdbWebCredentialStore 使用同一
+    //     IndexedDB 库（库名 Tango / 表 Authentication），已有密钥无缝兼容；
+    //   - 启动同步策略：IndexedDB 有钥 -> 补写 Cookie；IndexedDB 空且
+    //     Cookie 有钥 -> 从 Cookie 灾后恢复（IndexedDB 不可用时直接用
+    //     Cookie 备份）；两者皆空才生成新钥，生成与恢复均双写。
+    // -------------------------------------------------------------
+    const CRED_DB_NAME = 'Tango';
+    const CRED_STORE_NAME = 'Authentication';
+    const CRED_COOKIE_NAME = 'webadb_pk_backup';
+    const CRED_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 年（处于浏览器 400 天上限内）
+
+    function credIdbOpen() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(CRED_DB_NAME, 1);
+            req.onerror = () => reject(req.error);
+            req.onupgradeneeded = () => {
+                if (!req.result.objectStoreNames.contains(CRED_STORE_NAME)) {
+                    req.result.createObjectStore(CRED_STORE_NAME, { autoIncrement: true });
+                }
+            };
+            req.onsuccess = () => resolve(req.result);
+        });
+    }
+
+    async function credIdbGetAll() {
+        const db = await credIdbOpen();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(CRED_STORE_NAME, 'readonly');
+            const req = tx.objectStore(CRED_STORE_NAME).getAll();
+            req.onerror = () => reject(req.error);
+            req.onsuccess = () => resolve(req.result || []);
+            tx.oncomplete = () => db.close();
+        });
+    }
+
+    async function credIdbAdd(bytes) {
+        const db = await credIdbOpen();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(CRED_STORE_NAME, 'readwrite');
+            tx.objectStore(CRED_STORE_NAME).add(bytes);
+            tx.onerror = () => reject(tx.error);
+            tx.oncomplete = () => { db.close(); resolve(); };
+        });
+    }
+
+    function credCookieGet(name) {
+        const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+        return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    function credCookieSet(name, value, maxAge) {
+        document.cookie = `${name}=${encodeURIComponent(value)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+    }
+
+    function credBytesToB64(bytes) {
+        let bin = '';
+        const CHUNK = 0x8000;
+        for (let i = 0; i < bytes.length; i += CHUNK) {
+            bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+        }
+        return btoa(bin);
+    }
+
+    function credB64ToBytes(b64) {
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return bytes;
+    }
+
+    class PersistentCredentialStore {
+        #keys = [];
+        #keyName = `Tango@${globalThis.location.hostname}`;
+
+        static async create() {
+            const store = new PersistentCredentialStore();
+            await store.#sync();
+            return store;
+        }
+
+        // 双向灾备同步（以 IndexedDB 为主存储，仅在单边缺失时补写）
+        async #sync() {
+            let keys = [];
+            try {
+                keys = await credIdbGetAll();
+            } catch (e) {
+                console.warn('[Credential] IndexedDB 读取失败', e);
+            }
+
+            let cookieKey = null;
+            try {
+                const raw = credCookieGet(CRED_COOKIE_NAME);
+                if (raw) cookieKey = credB64ToBytes(raw);
+            } catch (e) {
+                console.warn('[Credential] Cookie 备份解析失败', e);
+            }
+
+            if (keys.length === 0 && cookieKey) {
+                // 灾后恢复：IndexedDB 被清，从 Cookie 找回私钥
+                try {
+                    await credIdbAdd(cookieKey);
+                    keys = [cookieKey];
+                    console.info('[Credential] 已从 Cookie 备份恢复私钥到 IndexedDB');
+                } catch (e) {
+                    // IndexedDB 完全不可用时，本次会话直接使用 Cookie 备份
+                    keys = [cookieKey];
+                    console.warn('[Credential] IndexedDB 不可用，本次会话使用 Cookie 备份', e);
+                }
+            } else if (keys.length > 0 && !cookieKey) {
+                // 补写备份：Cookie 被清（或首次使用），从 IndexedDB 补写
+                try {
+                    credCookieSet(CRED_COOKIE_NAME, credBytesToB64(keys[0]), CRED_COOKIE_MAX_AGE);
+                    console.info('[Credential] 已将私钥补写备份到 Cookie');
+                } catch (e) {
+                    console.warn('[Credential] Cookie 备份写入失败', e);
+                }
+            }
+
+            this.#keys = keys;
+        }
+
+        async generateKey() {
+            const { privateKey } = await crypto.subtle.generateKey(
+                { name: 'RSASSA-PKCS1-v1_5', modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-1' },
+                true, ['sign', 'verify']);
+            const bytes = new Uint8Array(await crypto.subtle.exportKey('pkcs8', privateKey));
+            try {
+                await credIdbAdd(bytes); // 主存
+            } catch (e) {
+                console.warn('[Credential] IndexedDB 写入失败，仅保留 Cookie 备份', e);
+            }
+            credCookieSet(CRED_COOKIE_NAME, credBytesToB64(bytes), CRED_COOKIE_MAX_AGE); // 备份
+            this.#keys = [bytes];
+            return { buffer: bytes, name: this.#keyName };
+        }
+
+        async *iterateKeys() {
+            for (const k of this.#keys) yield { buffer: k, name: this.#keyName };
+        }
+    }
 
     // -------------------------------------------------------------
     // DOM 国际化文本切换
@@ -578,7 +722,7 @@
             if (!device) return log(currentLang === 'zh' ? '未选择任何 ADB 设备（可能已取消，或未找到可用的调试设备）。' : 'No ADB device selected or found.', 'warn');
 
             const connection = await device.connect();
-            const credentialStore = new AdbWebCredentialStore();
+            const credentialStore = await PersistentCredentialStore.create();
             // 加 15 秒超时，避免 authenticate 卡死（目标设备未响应 ADB 握手时）
             const transport = await Promise.race([
                 AdbDaemonTransport.authenticate({
