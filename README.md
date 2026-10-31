@@ -1,3 +1,5 @@
+<div align="center">
+
 # WebADB 控制台
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -14,6 +16,10 @@
 **备用入口**：[https://aoooa101.github.io/aoooa-webadb/](https://aoooa101.github.io/aoooa-webadb/)
 
 基于 WebUSB 的免驱动浏览器端 ADB 工具。用数据线连接手机即可在网页里激活 Shizuku、Dhizuku 或直接运行 ADB 命令。
+
+</div>
+
+---
 
 ## 功能
 

@@ -1,3 +1,5 @@
+<div align="center">
+
 # WebADB Console
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -14,6 +16,10 @@
 **Alternative Entry**: [https://aoooa101.github.io/aoooa-webadb/](https://aoooa101.github.io/aoooa-webadb/)
 
 A driverless browser-based ADB tool powered by WebUSB. Connect your phone via USB cable to activate Shizuku, Dhizuku, or run ADB commands directly in your browser.
+
+</div>
+
+---
 
 ## Features
 
