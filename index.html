@@ -254,12 +254,31 @@
         <option value="" selected disabled data-en="-- Select preset command --">-- 点击选择命令预设 --</option>
         <optgroup label="框架与特权激活" data-en-label="Frameworks & Activation">
             <option value="action:shizuku" data-en="Auto-detect & Start Shizuku">自动寻找并启动 Shizuku</option>
+            <option value="sh /storage/emulated/0/Android/data/moe.shizuku.privileged.api/start.sh || sh /sdcard/Android/data/moe.shizuku.privileged.api/start.sh || sh /sdcard/Android/data/moe.shizuku.privileged.api/files/start.sh || sh /data/user/0/moe.shizuku.privileged.api/files/start.sh || sh /data/user/0/moe.shizuku.privileged.api/start.sh" data-en="Start Shizuku (Shell Script)">启动 Shizuku（脚本）</option>
             <option value="dpm set-device-owner com.rosan.dhizuku/.server.DhizukuDAReceiver" data-en="Activate Dhizuku (Device Owner)">激活 Dhizuku (Device Owner)</option>
             <option value="dpm set-device-owner com.aistra.hail/.receiver.DeviceAdminReceiver" data-en="Activate Hail (Device Owner)">激活 雹 Hail (Device Owner)</option>
             <option value="dpm set-device-owner web1n.stopapp/.receiver.AdminReceiver" data-en="Activate StopApp (Device Owner)">激活 小黑屋 (Device Owner)</option>
             <option value="dpm set-device-owner com.catchingnow.icebox/.receiver.DPMReceiver" data-en="Activate IceBox (Device Owner)">激活 冰箱 IceBox (Device Owner)</option>
-            <option value="sh /data/data/me.piebridge.brevent/brevent.sh" data-en="Activate Brevent">激活 黑阈 Brevent</option>
-            <option value="sh /data/system/thanos/start.sh" data-en="Activate Thanox">激活 Thanox</option>
+            <option value="sh /sdcard/Android/data/com.catchingnow.icebox/files/start.sh || sh /storage/emulated/0/Android/data/com.catchingnow.icebox/files/start.sh" data-en="Start IceBox (ADB Service)">启动 冰箱 IceBox（ADB 服务）</option>
+            <option value="sh /data/data/me.piebridge.brevent/brevent.sh || sh /sdcard/Android/data/me.piebridge.brevent/brevent.sh" data-en="Activate Brevent">激活 黑阈 Brevent</option>
+            <option value="sh /data/system/thanos/start.sh || sh /sdcard/Android/data/github.tornaco.android.thanos/starter.sh" data-en="Activate Thanox">激活 Thanox</option>
+            <option value="dpm set-device-owner com.oasisfeng.island/.IslandDeviceAdminReceiver" data-en="Activate Island (Device Owner)">激活 炼妖壶 Island (Device Owner)</option>
+            <option value="sh /storage/emulated/0/Android/data/rikka.appops/files/start.sh || sh /sdcard/Android/data/rikka.appops/files/start.sh" data-en="Start App Ops Service">启动 App Ops 服务</option>
+        </optgroup>
+        <optgroup label="应用授权与服务" data-en-label="App Permissions & Services">
+            <option value="pm grant com.omarea.vtools android.permission.WRITE_SECURE_SETTINGS" data-en="Scene: Write Secure Settings">Scene：修改安全设置</option>
+            <option value="pm grant com.omarea.vtools android.permission.DUMP" data-en="Scene: Dump System State">Scene：转储系统状态</option>
+            <option value="pm grant com.omarea.vtools android.permission.PACKAGE_USAGE_STATS" data-en="Scene: Access Usage Stats">Scene：访问使用情况统计</option>
+            <option value="sh /storage/emulated/0/Android/data/com.omarea.vtools/up.sh || sh /sdcard/Android/data/com.omarea.vtools/up.sh" data-en="Scene: Start Daemon">Scene：启动守护服务</option>
+            <option value="pm grant com.catchingnow.permissiondog android.permission.WRITE_SECURE_SETTINGS" data-en="PermissionDog: Write Secure Settings">权限狗：修改安全设置</option>
+            <option value="pm grant com.catchingnow.permissiondog android.permission.DUMP" data-en="PermissionDog: Dump System State">权限狗：转储系统状态</option>
+            <option value="pm grant com.twtools.app android.permission.WRITE_SECURE_SETTINGS" data-en="TwTools: Write Secure Settings">爱玩机工具箱：修改安全设置</option>
+            <option value="pm grant com.twtools.app android.permission.DUMP" data-en="TwTools: Dump System State">爱玩机工具箱：转储系统状态</option>
+            <option value="pm grant com.twtools.app android.permission.PACKAGE_USAGE_STATS" data-en="TwTools: Access Usage Stats">爱玩机工具箱：访问使用情况统计</option>
+            <option value="pm grant com.oasisfeng.greenify android.permission.WRITE_SECURE_SETTINGS" data-en="Greenify: Write Secure Settings">绿色守护：修改安全设置</option>
+            <option value="pm grant com.oasisfeng.greenify android.permission.DUMP" data-en="Greenify: Dump System State">绿色守护：转储系统状态</option>
+            <option value="pm grant com.oasisfeng.greenify android.permission.READ_LOGS" data-en="Greenify: Read System Logs">绿色守护：读取系统日志</option>
+            <option value="pm grant com.oasisfeng.greenify android.permission.PACKAGE_USAGE_STATS" data-en="Greenify: Access Usage Stats">绿色守护：访问使用情况统计</option>
         </optgroup>
         <optgroup label="网络与调试" data-en-label="Network & Debugging">
             <option value="action:tcpip_on" data-en="Enable Wireless ADB (Port 5555)">开启 5555 端口无线调试</option>
@@ -269,11 +288,14 @@
             <option value="pm list packages -3" data-en="List 3rd-party installed packages">查看第三方应用包名</option>
             <option value="dumpsys battery" data-en="Dump battery health & status">查看电池健康与温度</option>
             <option value="wm size" data-en="Display physical resolution">查看屏幕物理分辨率</option>
+            <option value="wm density" data-en="Display physical density (DPI)">查看屏幕物理密度 (DPI)</option>
+            <option value="dumpsys window | grep -E 'mCurrentFocus'" data-en="Show current focused window">查看当前焦点窗口应用</option>
         </optgroup>
         <optgroup label="电源管理" data-en-label="Power Management">
             <option value="reboot" data-en="Reboot Device">重启设备</option>
             <option value="reboot recovery" data-en="Reboot to Recovery">重启至 Recovery 模式</option>
             <option value="reboot bootloader" data-en="Reboot to Bootloader / Fastboot">重启至 Bootloader / Fastboot</option>
+            <option value="reboot -p" data-en="Power Off">安全关机</option>
         </optgroup>
     </select>
 
